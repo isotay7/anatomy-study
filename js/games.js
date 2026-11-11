@@ -31,6 +31,7 @@ function Flash(v, deck, indices, title) {
         : `<button class="btn primary wide" id="flip">Flip card</button>`}</div>
       <p class="keys">Keyboard: Space to flip · ← missed · → got it</p>`;
     $("#card", v).onclick = flip;
+    $$("#card .fig", v).forEach(f => makeZoom(f, { doubleTap: false }));
     if (S.flipped) { $("#miss", v).onclick = () => answer(false); $("#got", v).onclick = () => answer(true); }
     else $("#flip", v).onclick = flip;
   }
@@ -256,8 +257,9 @@ function Quiz(v, deck) {
   }
   function choices(i) {
     const t = deck.terms[i];
-    const same = shuffle(range(deck.terms.length).filter(j => j !== i && deck.terms[j].pic === t.pic));
-    const other = shuffle(range(deck.terms.length).filter(j => j !== i && deck.terms[j].pic !== t.pic));
+    const group = x => { const f = !simpleView() && Figures.forTerm(deck, x); return f ? f.id : x.pic; };
+    const same = shuffle(range(deck.terms.length).filter(j => j !== i && group(deck.terms[j]) === group(t)));
+    const other = shuffle(range(deck.terms.length).filter(j => j !== i && group(deck.terms[j]) !== group(t)));
     return shuffle([i, ...same.concat(other).slice(0, 3)]);
   }
   function render() {
@@ -272,6 +274,7 @@ function Quiz(v, deck) {
       <div class="options">${choices(i).map(j => `<button class="option" data-j="${j}">${esc(deck.terms[j].term)}</button>`).join("")}</div>
       <div id="feedback"></div>`;
     $$(".option", v).forEach(b => b.onclick = () => pick(b, i));
+    $$(".quiz-pic .fig", v).forEach(f => makeZoom(f, {}));
   }
   function pick(btn, i) {
     if (Q.locked) return;
@@ -318,3 +321,84 @@ function Weak(v, deck) {
   }
   return Flash(v, deck, ids, "Weak Spots");
 }
+
+/* ---------------- 3b. Label the Diagram: picker + textbook-figure games ---------------- */
+function LabelMenu(v, deck, sub) {
+  if (sub === "drawn") return Label(v, deck);
+  if (sub && deck.figures && deck.figures[sub]) return LabelFig(v, deck, sub);
+  const ids = Object.keys(deck.figures || {}).filter(id => Figures.get(deck, id).boxes.some(b => b[4]));
+  const row = (href, title, n, key) => {
+    const sc = Store.labelScore(key);
+    return `<a class="game-row" href="${href}"><span class="game-icon gi-label">${ICONS.label}</span>
+      <span class="game-text"><b>${esc(title)}</b><small>${n} labels</small></span>
+      ${sc ? `<span class="badge">Best ${sc.best}/${sc.total}</span>` : ""}<span class="chev">${ICONS.chev}</span></a>`;
+  };
+  v.innerHTML = `<div class="games">
+    ${ids.map(id => { const f = Figures.get(deck, id); return row(`#/deck/${deck.id}/label/${id}`, f.title, f.boxes.filter(b => b[4]).length, deck.id + "/" + id); }).join("")}
+    ${deck.labels ? row(`#/deck/${deck.id}/label/drawn`, "Drawn diagram: " + (deck.labels.title || "diagram"), deck.labels.items.length, deck.id) : ""}
+  </div>`;
+}
+
+function LabelFig(v, deck, figId) {
+  const fig = Figures.get(deck, figId);
+  const items = fig.boxes.map((b, i) => ({ b, i, label: b[4] })).filter(x => x.label);
+  function start() {
+    let extra = "";
+    // blank masks first, drop boxes on top (padded boxes can overlap a little)
+    fig.boxes.forEach(b => { if (!b[4]) extra += Figures.box(b, "fig-mask"); });
+    fig.boxes.forEach((b, i) => { if (b[4]) extra += Figures.box(b, "lbox drop fbox").replace('class="lbox', `data-i="${i}" data-name="${esc(b[4])}" class="lbox`); });
+    v.innerHTML = `
+      <div class="toolbar"><span class="pill" id="count">0 of ${items.length} placed</span><span class="pill good" id="firsts">0 first try</span>
+        <button class="btn small" id="restart">Restart</button></div>
+      <div id="result"></div>
+      <div class="label-layout">
+        <div class="fig-board card">
+          ${Figures.view(fig, [0, 0, 100, 100], Figures.layer(fig, { boxes: "none", extra }), "fig-label")}
+          <div class="zoom-ctl"><button class="btn small" id="zout" aria-label="Zoom out">−</button><button class="btn small" id="zin" aria-label="Zoom in">+</button><span class="muted">Pinch to zoom</span></div>
+        </div>
+        <div class="bank card"><h3>Drag each label to its box <small>or tap a label, then a box</small></h3>
+          <div class="chips">${shuffle(items).map(it => `<div class="chip" tabindex="0" data-i="${it.i}">${esc(it.label)}</div>`).join("")}</div></div>
+      </div>`;
+    const z = makeZoom($(".fig-label", v), {});
+    $("#zin", v).onclick = () => z.zoomBy(1.6);
+    $("#zout", v).onclick = () => z.zoomBy(1 / 1.6);
+    $("#restart", v).onclick = start;
+    let placed = 0, firsts = 0;
+    makeDnD({
+      root: v, targetSelector: ".fbox",
+      onDrop(chip, box) {
+        if (fig.boxes[chip.dataset.i][4] !== fig.boxes[box.dataset.i][4]) return false;
+        box.appendChild(chip); chip.classList.add("locked", "in-box"); chip.removeAttribute("tabindex");
+        box.classList.add("solved");
+        placed++; if (!chip.dataset.missed) firsts++;
+        $("#count", v).textContent = `${placed} of ${items.length} placed`;
+        $("#firsts", v).textContent = `${firsts} first try`;
+        if (placed === items.length) {
+          const key = deck.id + "/" + figId, prev = Store.labelScore(key);
+          Store.setLabelScore(key, firsts, items.length);
+          $(".bank", v).remove();
+          $("#result", v).innerHTML = `<div class="result card"><div><b class="score">${firsts}/${items.length}</b><span>right on the first try.${prev && firsts > prev.best ? " New best!" : ""}</span></div><button class="btn primary" id="again">Try again</button></div>`;
+          $("#again", v).onclick = start;
+        }
+        return true;
+      },
+    }).bindAll($$(".bank .chip", v));
+  }
+  start();
+}
+
+/* ---------------- Credits ---------------- */
+function Credits() {
+  bar.set({ title: "Image credits", back: "#/" });
+  const rows = DECK_ORDER.flatMap(id => Object.entries(DECKS[id].figures || {}).map(([fid, f]) => `
+    <div class="credit card"><b>${esc(f.title)}</b>
+      <p>“${esc(f.credit.file)}” by <b>OpenStax College</b>, from <i>Anatomy &amp; Physiology</i> (OpenStax, 2013), via
+      <a href="${esc(f.credit.url)}" target="_blank" rel="noopener">Wikimedia Commons</a>.
+      Licensed under <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>.
+      Same artwork as ${esc(f.credit.figure)} “${esc(f.credit.figTitle)}” in <i>Anatomy and Physiology 2e</i>.</p>
+      <p class="muted">Changes: resized; printed labels covered; cropped; highlight markers added.</p></div>`)).join("");
+  mount(`<section class="deck-hero"><h1>Image credits</h1>
+    <p class="muted">Textbook figures are from OpenStax, used under the Creative Commons Attribution 3.0 license.</p></section>
+    <div class="credits">${rows}</div>`, "credits");
+}
+

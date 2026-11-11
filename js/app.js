@@ -15,13 +15,42 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const range = n => Array.from({ length: n }, (_, i) => i);
 const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function pic(deck, term, opts = {}) {
-  if (term.img) return `<img class="photo" src="${esc(term.img)}" alt="" loading="lazy" draggable="false">`;
+/* Picture for a term: textbook figure (default), or the drawn diagram in Simple view / as a fallback. */
+const simpleView = () => Store.setting("simple") === true;
+function drawnPic(deck, term, opts = {}) {
   const D = deck.diagrams[term.pic];
   if (!D) return `<div class="nopic">${esc(term.def)}</div>`;
   return Diagram.render(D, { show: term.show || [], sides: opts.sides, label: "Highlighted structure" });
 }
-const hasPic = (deck, t) => !!(t.img || deck.diagrams[t.pic]);
+function pic(deck, term, opts = {}) {
+  const ti = deck.terms.indexOf(term);
+  let inner = null;
+  if (term.img) inner = `<img class="photo" src="${esc(term.img)}" alt="" loading="lazy" draggable="false">`;
+  else if (!simpleView() && !opts.drawn) inner = Figures.termPic(deck, term);
+  const isFig = !!inner && !term.img;
+  if (!inner) inner = drawnPic(deck, term, opts);
+  const zoomBtn = isFig && opts.zoomBtn !== false
+    ? `<button class="zoom-btn no-pan" data-ti="${ti}" aria-label="Zoom picture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21M10.5 7.5v6M7.5 10.5h6"/></svg></button>` : "";
+  return `<div class="pic${isFig ? " is-fig" : ""}" data-deck="${esc(deck.id)}" data-ti="${ti}">${inner}${zoomBtn}</div>`;
+}
+const hasPic = (deck, t) => !!(t.img || deck.diagrams[t.pic] || Figures.forTerm(deck, t));
+
+// Zoom button on any picture: full figure in a pinch-zoom viewer
+document.addEventListener("click", e => {
+  const b = e.target.closest(".zoom-btn");
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const p = b.closest(".pic"), deck = DECKS[p.dataset.deck], term = deck.terms[+p.dataset.ti];
+  openLightbox(Figures.termPic(deck, term, { full: true }), "Pinch to zoom");
+}, true);
+
+// Image couldn't load (offline, not cached yet): swap in the drawn diagram
+document.addEventListener("figure-failed", e => {
+  const p = e.detail && e.detail.closest(".pic");
+  if (!p || !p.dataset.deck) return;
+  const deck = DECKS[p.dataset.deck], term = deck.terms[+p.dataset.ti];
+  if (term) { p.classList.remove("is-fig"); p.innerHTML = drawnPic(deck, term, { sides: false }); }
+});
 
 const ICONS = {
   back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
@@ -68,17 +97,20 @@ function toast(msg, ms = 1400) {
 const GAMES = {
   flash: { name: "Picture Flashcards", icon: "cards", run: (v, d) => Flash(v, d, shuffle(range(d.terms.length)), "Picture Flashcards") },
   match: { name: "Matching", icon: "match", run: (v, d) => Match(v, d) },
-  label: { name: "Label the Diagram", icon: "label", run: (v, d) => Label(v, d) },
+  label: { name: "Label the Diagram", icon: "label", run: (v, d, sub) => LabelMenu(v, d, sub) },
   quiz: { name: "Quick Quiz", icon: "quiz", run: (v, d) => Quiz(v, d) },
   weak: { name: "Weak Spots", icon: "target", run: (v, d) => Weak(v, d) },
 };
 function route() {
-  const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
+  const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
+  if (parts[0] === "setup") return Setup(parts[1], parts[2]);
+  if (parts[0] === "credits") return Credits();
   if (parts[0] === "deck" && DECKS[parts[1]]) {
     const deck = DECKS[parts[1]], g = GAMES[parts[2]];
     if (g) {
-      bar.set({ title: g.name, back: "#/deck/" + deck.id });
-      cleanup = g.run(mount("", "game game-" + parts[2]), deck) || null;
+      const sub = parts[3];
+      bar.set({ title: g.name, back: sub ? `#/deck/${deck.id}/${parts[2]}` : "#/deck/" + deck.id });
+      cleanup = g.run(mount("", "game game-" + parts[2]), deck, sub) || null;
       return;
     }
     return DeckPage(deck);
@@ -108,7 +140,7 @@ function Home() {
       <h1>What are we studying today?</h1>
     </section>
     <div class="topics">${cards || '<p class="muted">No topics yet.</p>'}</div>
-    <p class="fine">Your progress is saved on this device only.</p>`, "home");
+    <p class="fine">Your progress is saved on this device only. · <a href="#/credits">Image credits</a></p>`, "home");
 }
 
 /* ---------- topic page ---------- */
@@ -120,9 +152,11 @@ function ring(pct) {
 }
 function DeckPage(deck) {
   bar.set({ title: deck.short || deck.title, back: "#/" });
-  const s = Store.summary(deck), ls = Store.labelScore(deck.id);
+  const s = Store.summary(deck);
+  const figIds = Object.keys(deck.figures || {}).filter(id => (Figures.get(deck, id).boxes || []).some(b => b[4]));
   const legend = (deck.legend || []).map(([k, name]) => `<span class="key"><i style="background:${(Diagram.KIND[k] || {}).fill || k}"></i>${esc(name)}</span>`).join("");
-  const nLabels = deck.labels ? deck.labels.items.length : 0;
+  const nLabels = (deck.labels ? 1 : 0) + figIds.length;
+  const simple = simpleView();
   const row = (key, desc, extra = "", disabled = false) => {
     const g = GAMES[key];
     return `<a class="game-row${disabled ? " disabled" : ""}" ${disabled ? 'aria-disabled="true"' : `href="#/deck/${esc(deck.id)}/${key}"`}>
@@ -147,11 +181,17 @@ function DeckPage(deck) {
     <section class="games">
       ${row("flash", "See the highlighted structure, name it, flip to check")}
       ${row("match", "6 at a time: term → definition or picture")}
-      ${nLabels ? row("label", `Drag ${nLabels} labels onto the diagram`, ls ? `<span class="badge">Best ${ls.best}/${ls.total}</span>` : "") : ""}
+      ${nLabels ? row("label", figIds.length && !simple ? `${figIds.length} textbook figures${deck.labels ? " + the drawn diagram" : ""}` : `Drag ${deck.labels.items.length} labels onto the diagram`) : ""}
       ${row("quiz", "Name the highlighted structure from 4 choices")}
       ${row("weak", s.weakCount ? `Drill the ${Math.min(10, s.weakCount)} cards you've missed most` : "Missed cards will show up here", s.weakCount ? `<span class="badge hot">${s.weakCount}</span>` : "", !s.weakCount)}
     </section>
-    <button class="link-btn" id="reset">Reset progress for this topic</button>`, "deck");
+    ${figIds.length ? `<section class="view-toggle card">
+      <div><b>Pictures</b><small>${simple ? "Simple drawn diagrams" : "Real textbook figures"}</small></div>
+      <div class="seg"><button data-v="fig" class="${simple ? "" : "on"}">Textbook</button><button data-v="simple" class="${simple ? "on" : ""}">Simple view</button></div>
+    </section>` : ""}
+    <button class="link-btn" id="reset">Reset progress for this topic</button>
+    ${figIds.length ? `<a class="link-btn" href="#/credits">Image credits</a>` : ""}`, "deck");
+  $$(".view-toggle .seg button", v).forEach(b => b.onclick = () => { Store.setting("simple", b.dataset.v === "simple"); DeckPage(deck); });
   $("#reset", v).onclick = () => {
     if (confirm("Reset all progress for this topic? This can't be undone.")) { Store.resetDeck(deck.id); DeckPage(deck); toast("Progress reset"); }
   };

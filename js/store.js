@@ -48,6 +48,12 @@ const Store = (() => {
     out.weakCount = weakTerms(deck, 999).length;
     return out;
   }
+  function setting(k, v) {
+    data.settings = data.settings || {};
+    if (v === undefined) return data.settings[k];
+    data.settings[k] = v; save();
+  }
+  // label-game scores are keyed "deckId" (drawn diagram) or "deckId/figureId"
   function labelScore(deckId) { return data.labels[deckId] || null; }
   function setLabelScore(deckId, right, total) {
     const prev = data.labels[deckId];
@@ -56,8 +62,8 @@ const Store = (() => {
   }
   function resetDeck(deckId) {
     for (const k of Object.keys(data.cards)) if (k.startsWith(deckId + "::")) delete data.cards[k];
-    delete data.labels[deckId];
+    for (const k of Object.keys(data.labels)) if (k === deckId || k.startsWith(deckId + "/")) delete data.labels[k];
     save();
   }
-  return { card, record, status, weakTerms, summary, labelScore, setLabelScore, resetDeck };
+  return { card, record, status, weakTerms, summary, labelScore, setLabelScore, resetDeck, setting };
 })();

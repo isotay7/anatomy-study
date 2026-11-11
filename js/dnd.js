@@ -54,10 +54,19 @@ function makeDnD({ root, targetSelector, onDrop }) {
     const sx = e.clientX, sy = e.clientY, start = chip.getBoundingClientRect();
     let ghost = null, over = null, lastX = sx, lastY = sy, raf = 0;
 
+    // target under the finger, or the nearest open target within 16px (small boxes on a phone)
     const find = (x, y) => {
       const el = document.elementFromPoint(x, y);
       const t = el && el.closest(targetSelector);
-      return t && root.contains(t) && isOpen(t) ? t : null;
+      if (t && root.contains(t) && isOpen(t)) return t;
+      let best = null, bd = 16;
+      for (const c of targets()) {
+        if (!isOpen(c)) continue;
+        const r = c.getBoundingClientRect();
+        const dx = Math.max(r.left - x, 0, x - r.right), dy = Math.max(r.top - y, 0, y - r.bottom), d = Math.hypot(dx, dy);
+        if (d < bd) { bd = d; best = c; }
+      }
+      return best;
     };
     const setOver = t => {
       if (t === over) return;
@@ -73,11 +82,11 @@ function makeDnD({ root, targetSelector, onDrop }) {
       return Math.max(bar ? bar.getBoundingClientRect().bottom : 0, t && getComputedStyle(tray).position === "sticky" ? t.bottom : 0);
     };
     const autoscroll = () => {
-      const edge = 70, h = window.innerHeight, top = topEdge();
+      const h = window.innerHeight, top = topEdge(), TOPZ = 44, BOTZ = 56;
       if (lastY > top + 6) leftTray = true;
       let v = 0;
-      if (leftTray && lastY < top + edge) v = -Math.ceil((top + edge - lastY) / 6);
-      else if (lastY > h - edge) v = Math.ceil((lastY - (h - edge)) / 6);
+      if (leftTray && lastY < top + TOPZ) v = -Math.ceil((top + TOPZ - lastY) / 5);
+      else if (lastY > h - BOTZ) v = Math.ceil((lastY - (h - BOTZ)) / 5);
       if (v) { window.scrollBy(0, v); setOver(find(lastX, lastY)); }
       raf = requestAnimationFrame(autoscroll);
     };

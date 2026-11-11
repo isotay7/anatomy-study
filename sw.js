@@ -1,10 +1,12 @@
 /* Service worker: network-first (so updates show up right away), cache as offline fallback. */
-const CACHE = "anatomy-study-v1";
+const CACHE = "anatomy-study-v2";
 const CORE = [
   "./",
   "index.html",
   "css/app.css",
   "js/diagram.js",
+  "js/figure.js",
+  "js/setup.js",
   "js/store.js",
   "js/dnd.js",
   "js/games.js",
@@ -16,6 +18,13 @@ const CORE = [
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
+  "images/aorta.jpg",
+  "images/head-neck-arteries.jpg",
+  "images/arm-arteries.jpg",
+  "images/thorax-veins.jpg",
+  "images/head-neck-veins.jpg",
+  "images/heart-surface.jpg",
+  "images/heart-coronary.jpg",
 ];
 
 self.addEventListener("install", e => {

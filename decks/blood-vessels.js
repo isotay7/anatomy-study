@@ -17,6 +17,10 @@
              side "L"/"R" = which column (viewer's left/right) the box is in.
              (For a photo-based topic use  at:[x, y]  instead of vessel/t.)
 
+   figures   Real textbook figures (bottom of this file). Each term is shown
+             on the figure that has a marker for it; the drawn diagrams
+             are the fallback and the "Simple view".
+
    diagrams  The drawings. Coordinates are in SVG units. Patient's R is
              on the viewer's left. Vessels are
                [id, kind, path, startWidth, endWidth, options]
@@ -164,6 +168,280 @@
           ["lpa", "p", "M470 412 C495 402 530 398 565 410", 15, 11],
         ],
       },
+    },
+
+    /* Textbook figures (OpenStax, CC BY 3.0, via Wikimedia Commons; see the Credits screen).
+       Fine-tune these with setup mode: open the app with #setup, adjust, tap "Copy coordinates",
+       then replace that figure's whole block below with what you copied. */
+    figures: {
+    "aorta": {
+      title: "Aorta", src: "images/aorta.jpg", w: 1264, h: 1347, fs: 2.04,
+      credit: {"figure":"Figure 20.25","figTitle":"Aorta","file":"2121 Aorta.jpg","url":"https://commons.wikimedia.org/wiki/File:2121_Aorta.jpg"},
+      view: [22, 0, 56, 97],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [9.91, 0.47, 19.73, 6.63, "R common carotid aa"],
+        [75.74, 0.47, 18.31, 6.63, "L common carotid aa"],
+        [0.42, 16.65, 22.26, 6.63, "R subclavian aa"],
+        [75.82, 16.65, 20.27, 6.64, "L subclavian aa"],
+        [0.42, 34.03, 21.55, 6.56, "Brachiocephalic aa"],
+        [75.74, 35.81, 14.9, 2.92, "Arch aorta"],
+        [75.89, 47.24, 24, 3.51, "Descending aorta"],
+        [0.34, 48.13, 22.34, 3.51],
+        [75.82, 56.6, 18.07, 6.63, "L coronary aa"],
+        [0.42, 60.08, 20.05, 6.56, "R coronary aa"],
+        [75.66, 72.26, 19.89, 2.92],
+        [69.49, 83.02, 22.5, 2.92],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "Brachiocephalic aa": [[46, 26.7]],
+        "L common carotid aa": [[58.1, 8.5]],
+        "L subclavian aa": [[63.3, 19.7]],
+        "Descending (thoracic) aorta": [[62.1, 48.8], [60.9, 73.9]],
+        "R and L coronary aa": [[38, 62.5], [53, 59.4]],
+        "R and L subclavian aa": [[32.4, 21.9], [63.3, 19.7]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+        "R and L coronary aa": [24, 35, 52, 40],
+      },
+    },
+    "head-neck-arteries": {
+      title: "Arteries of the head & neck", src: "images/head-neck-arteries.jpg", w: 1400, h: 1532, fs: 1.58,
+      credit: {"figure":"Figure 20.26","figTitle":"Arteries Supplying the Head and Neck","file":"2122 Common Carotid Artery.jpg","url":"https://commons.wikimedia.org/wiki/File:2122_Common_Carotid_Artery.jpg"},
+      view: [14, 22, 66, 66],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [78.05, 15.58, 21.4, 2.84],
+        [78.12, 28.83, 10.04, 2.91],
+        [1.26, 32.62, 9.61, 2.91],
+        [1.41, 43.19, 16.11, 2.39, "Internal carotid aa"],
+        [78.12, 50.24, 6.76, 2.39],
+        [1.34, 52.2, 14.33, 2.45],
+        [78.12, 56.9, 8.19, 2.91],
+        [1.26, 61.93, 10.11, 2.39],
+        [78.12, 68.98, 16.97, 2.39, "External carotid aa"],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "R and L external carotid aa": [[47.3, 59.3]],
+        "R and L internal carotid aa": [[44.2, 48.8]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+      },
+    },
+    "arm-arteries": {
+      title: "Arteries of the thorax & upper limb", src: "images/arm-arteries.jpg", w: 869, h: 1538, fs: 2.96,
+      credit: {"figure":"Figure 20.31","figTitle":"Major Arteries Serving the Thorax and Upper Limb","file":"2127 Thoracic Upper Limb Arteries.jpg","url":"https://commons.wikimedia.org/wiki/File:2127_Thoracic_Upper_Limb_Arteries.jpg"},
+      view: [20, 0, 80, 100],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [1.62, 1.31, 31.86, 2.85, "R subclavian aa"],
+        [1.39, 8.07, 14.59, 2.85, "R axillary aa"],
+        [1.62, 15.09, 37.38, 2.33],
+        [1.62, 24.2, 26.91, 2.85],
+        [1.62, 30.31, 15.86, 2.33, "Brachial aa"],
+        [1.62, 37.33, 28.98, 2.33],
+        [1.62, 51.9, 12.52, 2.33, "Radial aa"],
+        [1.39, 58.98, 27.6, 5.26],
+        [63.65, 69.52, 10.8, 2.33, "Ulnar aa"],
+        [63.65, 82.65, 34.5, 2.85],
+        [63.53, 86.36, 35.19, 5.26],
+        [63.65, 93.18, 12.29, 2.85],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "R and L axillary aa": [[76.5, 14.6]],
+        "R and L brachial aa": [[61.6, 35]],
+        "R and L radial aa": [[46.5, 55]],
+        "R and L ulnar aa": [[41.1, 70.6]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+        "R and L axillary aa": [30, 0, 70, 52],
+        "R and L brachial aa": [30, 0, 70, 60],
+        "R and L radial aa": [12, 38, 72, 50],
+        "R and L ulnar aa": [12, 38, 72, 50],
+      },
+    },
+    "thorax-veins": {
+      title: "Veins of the thorax & abdomen", src: "images/thorax-veins.jpg", w: 1500, h: 1362, fs: 1.41,
+      credit: {"figure":"Figure 20.36","figTitle":"Veins of the Thoracic and Abdominal Regions","file":"2132 Thoracic Abdominal Veins.jpg","url":"https://commons.wikimedia.org/wiki/File:2132_Thoracic_Abdominal_Veins.jpg"},
+      view: [16, 0, 68, 62],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [81.35, 1.12, 8.97, 2.68],
+        [81.48, 5.01, 14.37, 3.19, "Internal jugular vv"],
+        [0.95, 7.94, 10.63, 5.18, "Superior vena cava"],
+        [81.48, 9.56, 15.1, 3.19, "External jugular vv"],
+        [81.42, 14.26, 10.7, 2.68],
+        [1.02, 18, 11.1, 2.68],
+        [81.42, 19.25, 15.17, 3.19],
+        [81.35, 23.73, 7.43, 3.19],
+        [1.08, 26.81, 11.5, 3.19],
+        [81.42, 28.35, 8.7, 3.19],
+        [0.88, 35.26, 8.03, 5.18],
+        [81.42, 38.27, 11.97, 3.19],
+        [0.95, 43.48, 7.57, 3.19, "Azygos vein"],
+        [81.48, 45.9, 10.03, 2.68],
+        [1.02, 48.69, 7.7, 3.12],
+        [81.42, 51.19, 18.23, 2.61, "Inferior vena cava"],
+        [1.08, 56.03, 5.97, 2.68],
+        [81.48, 56.25, 7.57, 2.75],
+        [1.02, 60.95, 8.43, 2.68],
+        [81.35, 64.11, 7.83, 2.68],
+        [1.02, 67.34, 7.77, 2.68],
+        [0.95, 79.53, 13.3, 2.68],
+        [1.08, 85.18, 11.7, 2.68],
+        [1.08, 89, 12.37, 2.68],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "Superior vena cava": [[44.6, 26]],
+        "Inferior vena cava": [[45.7, 46.6]],
+        "Azygos vein": [[47.5, 40]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+      },
+    },
+    "head-neck-veins": {
+      title: "Veins of the head & neck", src: "images/head-neck-veins.jpg", w: 1500, h: 1455, fs: 1.78,
+      credit: {"figure":"Figure 20.37","figTitle":"Veins of the Head and Neck","file":"2133 Head and Neck Veins.jpg","url":"https://commons.wikimedia.org/wiki/File:2133_Head_and_Neck_Veins.jpg"},
+      view: [22, 22, 56, 66],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [0.75, 7.79, 21.17, 2.99],
+        [0.82, 12.53, 19.63, 2.99],
+        [0.75, 17.27, 13.23, 2.99],
+        [0.75, 22.01, 8.63, 2.99],
+        [80.68, 23.59, 9.3, 2.99],
+        [80.82, 31.5, 16.1, 2.51],
+        [0.82, 36.31, 21.1, 2.92],
+        [80.82, 37.82, 8.97, 2.99],
+        [0.75, 41.12, 14.03, 2.99],
+        [80.88, 43.46, 6.03, 2.58],
+        [0.75, 46, 13.63, 2.99],
+        [0.82, 50.88, 13.57, 2.51],
+        [0.82, 55.69, 15.23, 2.99, "External jugular vv"],
+        [80.88, 58.51, 14.5, 2.99, "Internal jugular vv"],
+        [0.75, 60.57, 9.03, 2.51],
+        [80.88, 76.31, 15.77, 2.92],
+        [80.75, 81.74, 7.5, 2.92],
+        [80.82, 87.17, 18.5, 2.99, "Superior vena cava"],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "R and L external jugular vv": [[44.6, 49.5]],
+        "R and L internal jugular vv": [[53.2, 60]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+      },
+    },
+    "heart-surface": {
+      title: "External heart", src: "images/heart-surface.jpg", w: 1600, h: 1505, fs: 1.15,
+      credit: {"figure":"Figure 19.6","figTitle":"External Anatomy of the Heart","file":"2005 Surface Anatomy of the Heart.jpg","url":"https://commons.wikimedia.org/wiki/File:2005_Surface_Anatomy_of_the_Heart.jpg"},
+      view: [33, 0, 44, 50],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [75.3, 1.98, 20.84, 2.62, "L common carotid aa"],
+        [18.61, 2.31, 16.84, 2.62, "Brachiocephalic aa"],
+        [75.3, 5.03, 16.78, 2.69, "L subclavian aa"],
+        [18.61, 5.63, 15.09, 2.62, "Superior vena cava"],
+        [75.24, 7.83, 18.46, 2.88, "Arch aorta"],
+        [75.24, 9.76, 18.46, 2.88],
+        [18.55, 9.29, 13.09, 4.68, "R pulmonary aa"],
+        [75.3, 12.81, 16.78, 2.69, "L pulmonary aa"],
+        [18.55, 14.74, 13.09, 2.88],
+        [18.55, 16.67, 13.09, 2.88, "Pulmonary trunk"],
+        [75.3, 15.93, 16.28, 2.62],
+        [18.49, 19.99, 13.15, 4.28],
+        [75.24, 20.72, 15.59, 2.29],
+        [75.3, 24.77, 13.46, 2.69],
+        [18.61, 25.17, 9.78, 2.69],
+        [18.61, 28.69, 16.59, 2.62, "R coronary aa"],
+        [75.3, 28.69, 15.46, 2.69, "L coronary aa"],
+        [18.55, 31.75, 16.02, 2.29],
+        [75.3, 33.41, 10.21, 2.29],
+        [18.61, 34.8, 11.34, 2.69],
+        [75.3, 38.12, 14.28, 2.29],
+        [18.61, 38.26, 16.46, 2.95],
+        [18.61, 40.26, 16.46, 2.95],
+        [75.24, 40.72, 23.09, 2.69],
+        [18.61, 43.84, 13.96, 2.29, "Inferior vena cava"],
+        [75.24, 46.3, 4.59, 2.62],
+        [35.55, 55.27, 4.84, 2.29],
+        [75.3, 55.93, 15.15, 2.62, "Superior vena cava"],
+        [75.36, 59.12, 17.84, 2.62, "R pulmonary aa"],
+        [18.61, 60.38, 16.78, 2.69, "L pulmonary aa"],
+        [75.36, 62.31, 17.28, 2.69],
+        [18.61, 63.77, 16.21, 2.69],
+        [75.36, 66.96, 9.71, 2.69],
+        [18.55, 67.89, 15.59, 2.29],
+        [18.61, 70.75, 8.65, 2.29],
+        [75.36, 70.88, 13.9, 2.29, "Inferior vena cava"],
+        [75.3, 74.01, 12.02, 2.69, "Coronary sinus"],
+        [18.55, 74.2, 16.84, 4.68],
+        [75.3, 77.26, 14.28, 2.29],
+        [18.61, 79.59, 14.28, 2.29],
+        [75.36, 80.38, 16.52, 2.69, "R coronary aa"],
+        [18.61, 83.31, 12.78, 4.28],
+        [75.36, 84.3, 23.71, 2.69],
+        [75.3, 87.96, 14.96, 2.29],
+        [18.61, 89.49, 10.21, 2.29],
+        [75.36, 92.08, 11.28, 2.69],
+        [31.93, 96.26, 4.59, 2.62],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "Pulmonary trunk": [[54.4, 18.1]],
+        "R and L pulmonary aa": [[40.4, 13.4], [62.3, 12.5]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+      },
+    },
+    "heart-coronary": {
+      title: "Coronary circulation", src: "images/heart-coronary.jpg", w: 1600, h: 1469, fs: 1.12,
+      credit: {"figure":"Figure 19.15","figTitle":"Coronary Circulation","file":"2014ab Coronary Blood Vessels.jpg","url":"https://commons.wikimedia.org/wiki/File:2014ab_Coronary_Blood_Vessels.jpg"},
+      view: [53, 45, 47, 50],
+      // [x, y, width, height] in % of the image. A 5th value makes it a Label-the-Diagram drop box.
+      boxes: [
+        [1.11, 7.2, 8.59, 2.27, "Arch aorta"],
+        [45.93, 8.63, 10.4, 4.66, "L coronary aa"],
+        [1.11, 11.9, 12.71, 2.68],
+        [45.99, 13.74, 12.71, 2.68, "Pulmonary trunk"],
+        [1.11, 16.53, 11.46, 4.66, "R coronary aa"],
+        [45.93, 16.94, 13.21, 2.68],
+        [1.17, 23.06, 9.52, 2.68],
+        [48.99, 25.92, 11.65, 6.7],
+        [1.11, 27.69, 10.52, 2.34],
+        [1.11, 32.39, 10.28, 4.25],
+        [48.93, 35.79, 10.71, 4.32],
+        [1.05, 38.92, 10.65, 4.32],
+        [1.17, 45.53, 11.78, 2.68],
+        [76.67, 46.89, 11.78, 2.68, "Coronary sinus"],
+        [88.8, 46.89, 10.65, 4.25],
+        [53.8, 52.47, 13.28, 2.68],
+        [53.74, 55.6, 10.65, 4.25],
+        [53.8, 60.5, 7.02, 4.72],
+        [48.3, 67.52, 11.59, 6.7],
+        [48.24, 75.62, 7.4, 6.29],
+        [91.74, 85.42, 7.21, 6.7, "R coronary aa"],
+        [70.43, 91.75, 11.34, 4.31],
+        [82.8, 91.82, 6.96, 4.59],
+      ],
+      // pulsing highlight(s) for each term, [x, y] in %
+      markers: {
+        "Coronary sinus": [[82.3, 67.7]],
+      },
+      // optional crop per term (otherwise "view" is used)
+      views: {
+      },
+    },
     },
   });
 })();
