@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff6f1"/>
+      <stop offset="1" stop-color="#f6d8cf"/>
+    </linearGradient>
+    <radialGradient id="h" cx="38%" cy="30%" r="80%">
+      <stop offset="0" stop-color="#ee7d76"/>
+      <stop offset="1" stop-color="#c2333b"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g transform="translate(256 256) scale(0.95) translate(-445 -478)" stroke-linecap="round" fill="none">
+    <path d="M547 420 C548 470 548 520 547 560" stroke="#a51f29" stroke-width="26"/>
+    <path d="M372 520 L372 296" stroke="#2f63c8" stroke-width="30"/>
+    <path d="M440 347 L410 286 M480 332 L479 270 M510 340 L536 286" stroke="#b3232d" stroke-width="18"/>
+    <path d="M414 505 C402 430 410 352 460 336 C505 322 545 350 547 425" stroke="#b3232d" stroke-width="32"/>
+    <path d="M462 508 C466 470 470 440 470 412 C495 400 520 398 548 404" stroke="#7a52c2" stroke-width="24"/>
+    <path d="M352 505 C330 525 322 575 336 612 C352 652 420 682 515 676 C535 640 540 585 520 540 C500 498 450 482 410 488 C385 491 365 496 352 505 Z" fill="url(#h)"/>
+    <path d="M462 500 C470 560 486 625 506 668" stroke="#fff" stroke-opacity=".35" stroke-width="7"/>
+    <path d="M360 540 C366 520 380 508 398 504" stroke="#fff" stroke-opacity=".55" stroke-width="9"/>
+  </g>
+</svg>

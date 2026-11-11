@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anatomy Lab Study: Blood Vessels Above the Diaphragm</title>
+<style>
+  :root{
+    --bg:#faf6f2; --card:#ffffff; --ink:#2b2220; --muted:#7a6d68; --line:#e8dfd9;
+    --accent:#b8323a; --accent-soft:#fbe9ea; --good:#2f9e5b; --good-soft:#e3f6ea;
+    --bad:#d23b3b; --bad-soft:#fde4e4; --vein:#3b6fd8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:22px 32px 0;max-width:1300px;margin:0 auto}
+  h1{margin:0;font-size:24px;letter-spacing:-.01em}
+  .sub{color:var(--muted);margin:4px 0 16px;font-size:14px}
+  nav{display:flex;gap:6px;border-bottom:1px solid var(--line)}
+  nav button{border:0;background:none;padding:12px 18px;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+  nav button.on{color:var(--accent);border-bottom-color:var(--accent)}
+  main{max-width:1300px;margin:0 auto;padding:24px 32px 48px}
+  .view{display:none}.view.on{display:block}
+  .btn{border:1px solid var(--line);background:var(--card);padding:10px 18px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:#cdbfb8}
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.good{background:var(--good);color:#fff;border-color:var(--good)}
+  .btn.bad{background:#fff;color:var(--bad);border-color:#f0b9b9}
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+  .toolbar .spacer{flex:1}
+  .pill{font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+  .seg button{border:0;background:none;padding:8px 14px;font-size:14px;cursor:pointer;color:var(--muted);font-weight:600}
+  .seg button.on{background:var(--accent-soft);color:var(--accent)}
+
+  /* Flashcards */
+  .fc-wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+  .fc-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;box-shadow:0 2px 10px rgba(60,30,20,.05)}
+  .fc-card svg,.fc-card img{width:100%;display:block;max-height:68vh}
+  .fc-side{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;min-height:260px;display:flex;flex-direction:column;gap:14px}
+  .fc-hint{color:var(--muted);font-size:15px;line-height:1.5}
+  .fc-term{font-size:26px;font-weight:700;color:var(--accent)}
+  .fc-def{font-size:17px;line-height:1.45}
+  .fc-btns{display:flex;gap:10px;margin-top:auto}
+  .fc-btns .btn{flex:1}
+  .keys{font-size:12px;color:var(--muted)}
+  .done{text-align:center;padding:60px 20px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+  .done h2{margin:0 0 8px}
+
+  /* Drag chips */
+  .chip{display:inline-flex;align-items:center;justify-content:center;text-align:center;padding:9px 14px;border-radius:10px;background:#fff;border:1.5px solid #d9ccc5;font-size:14px;font-weight:600;cursor:grab;user-select:none;touch-action:none;position:relative;box-shadow:0 1px 3px rgba(0,0,0,.06);line-height:1.2}
+  .chip.dragging{cursor:grabbing;z-index:1000;pointer-events:none;box-shadow:0 10px 24px rgba(0,0,0,.18);border-color:var(--accent)}
+  .chip.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+  .chip.locked{cursor:default;background:var(--good-soft);border-color:var(--good);color:#1d6b3d;box-shadow:none}
+  .drop.over{outline:3px solid var(--accent);outline-offset:2px}
+  .drop.flash{animation:flash .5s}
+  @keyframes flash{0%,100%{background:inherit}40%{background:var(--bad-soft);border-color:var(--bad)}}
+
+  /* Matching */
+  .m-grid{display:grid;grid-template-columns:260px minmax(0,1fr);gap:28px;align-items:start}
+  .m-terms{display:flex;flex-direction:column;gap:10px;min-height:200px}
+  .m-terms .chip{justify-content:flex-start;text-align:left}
+  .m-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .m-targets.pics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .m-target{background:var(--card);border:1.5px dashed #d4c6bf;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:96px}
+  .m-target .txt{font-size:15px;line-height:1.4}
+  .m-target svg,.m-target img{width:100%;display:block;border-radius:8px;background:#fdfbf9}
+  .m-target .slot{min-height:38px;border-radius:10px;background:#f6f0ec;display:flex;align-items:center;justify-content:center;font-size:12px;color:#b3a59e}
+  .m-target .slot .chip{width:100%}
+  .m-target.solved{border-style:solid;border-color:var(--good);background:#fbfffc}
+
+  /* Label diagram */
+  .l-grid{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:20px;align-items:start}
+  .l-diagram{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:0;overflow:visible}
+  .l-diagram svg{display:block;width:100%}
+  .l-box{position:absolute;border:1.5px dashed #c9b8b0;border-radius:8px;background:rgba(255,255,255,.92);display:flex;align-items:stretch;justify-content:stretch}
+  .l-box .chip{width:100%;padding:2px 6px;font-size:12px;border-radius:6px}
+  .l-box.solved{border-style:solid;border-color:var(--good)}
+  .l-bank{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;position:sticky;top:12px}
+  .l-bank h3{margin:0 0 4px;font-size:14px;color:var(--muted);font-weight:600}
+  .l-bank .chip{font-size:13px;padding:7px 10px}
+  .result{background:var(--good-soft);border:1px solid #bfe6cd;color:#1d6b3d;border-radius:12px;padding:12px 16px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1>Anatomy Lab: Blood Vessels Above the Diaphragm</h1>
+  <p class="sub">Arteries in red, veins in blue, pulmonary vessels in purple. Patient's R is on your left.</p>
+  <nav>
+    <button data-tab="flash" class="on">Picture Flashcards</button>
+    <button data-tab="match">Matching</button>
+    <button data-tab="label">Label the Diagram</button>
+  </nav>
+</header>
+<main>
+  <section id="flash" class="view on"></section>
+  <section id="match" class="view"></section>
+  <section id="label" class="view"></section>
+</main>
+
+<script>
+/* =====================================================================
+   STUDY CONTENT: edit this list to add or change terms.
+   term : the name
+   def  : one-line definition
+   pic  : "art" (arteries diagram) or "vein" (veins & heart diagram)
+   show : which vessel(s) to highlight in the picture (ids below)
+   img  : OPTIONAL. Paste a real image (data: URL) to use instead of the drawing.
+   ===================================================================== */
+const TERMS = [
+  {term:"Brachiocephalic aa", def:"First of three branches off the aortic arch", pic:"art", show:["brachio"]},
+  {term:"L common carotid aa", def:"Second branch of the aortic arch; supplies L head, neck, brain", pic:"art", show:["lcc"]},
+  {term:"L subclavian aa", def:"Third branch of the aortic arch; supplies the L arm", pic:"art", show:["lsub"]},
+  {term:"Descending (thoracic) aorta", def:"Runs down off the arch as far as the diaphragm", pic:"art", show:["desc"]},
+  {term:"R and L coronary aa", def:"Come off either side of the root of the aorta", pic:"art", show:["rcor","lcor"]},
+  {term:"R and L subclavian aa", def:"Deep to the clavicle, out to the lateral edge of the first rib", pic:"art", show:["rsub","lsub"]},
+  {term:"R and L axillary aa", def:"Continuation of the subclavian, as far as teres major (edge of armpit)", pic:"art", show:["rax","lax"]},
+  {term:"R and L brachial aa", def:"Continuation of the axillary, as far as the cubital fossa (inner elbow)", pic:"art", show:["rbrach","lbrach"]},
+  {term:"R and L radial aa", def:"Branch of the brachial running along the radius", pic:"art", show:["rrad","lrad"]},
+  {term:"R and L ulnar aa", def:"Branch of the brachial running along the ulna", pic:"art", show:["rul","lul"]},
+  {term:"R and L external carotid aa", def:"Anterior branches of the common carotid; supply face and head", pic:"art", show:["rext","lext"]},
+  {term:"R and L internal carotid aa", def:"Posterior branches of the common carotid; supply the brain", pic:"art", show:["rint","lint"]},
+  {term:"Pulmonary trunk", def:"Comes off the R ventricle", pic:"vein", show:["ptrunk"]},
+  {term:"R and L pulmonary aa", def:"Branch off the pulmonary trunk; supply the R and L lungs", pic:"vein", show:["rpa","lpa"]},
+  {term:"Superior vena cava", def:"Enters the R atrium; drains everything above the heart", pic:"vein", show:["svc"]},
+  {term:"Inferior vena cava", def:"Enters the R atrium; drains everything below the heart", pic:"vein", show:["ivc"]},
+  {term:"Coronary sinus", def:"Back of the heart between atria and ventricles; drains the heart's veins", pic:"vein", show:["csinus"]},
+  {term:"R and L external jugular vv", def:"External to the sternocleidomastoid; drain face and head", pic:"vein", show:["rej","lej"]},
+  {term:"R and L internal jugular vv", def:"Internal to the sternocleidomastoid; drain the brain", pic:"vein", show:["rij","lij"]},
+  {term:"Azygos vein", def:"Drains all the intercostal veins; empties into the SVC", pic:"vein", show:["azygos"]},
+];
+
+/* Label-the-diagram boxes (aortic arch & branches). col: which side the box sits on. */
+const LABELS = [
+  {label:"R internal carotid aa", col:"L", y:20,  at:[345,95]},
+  {label:"R external carotid aa", col:"L", y:64,  at:[374,97]},
+  {label:"R common carotid aa",   col:"L", y:140, at:[370,200]},
+  {label:"R subclavian aa",       col:"L", y:198, at:[332,245]},
+  {label:"R axillary aa",         col:"L", y:244, at:[242,255]},
+  {label:"Brachiocephalic aa",    col:"L", y:296, at:[410,294]},
+  {label:"Brachial aa",           col:"L", y:370, at:[192,345]},
+  {label:"Radial aa",             col:"L", y:466, at:[172,495]},
+  {label:"Ulnar aa",              col:"L", y:540, at:[205,530]},
+  {label:"R coronary aa",         col:"L", y:612, at:[358,565]},
+  {label:"L internal carotid aa", col:"R", y:20,  at:[505,95]},
+  {label:"L external carotid aa", col:"R", y:64,  at:[477,97]},
+  {label:"L common carotid aa",   col:"R", y:140, at:[483,240]},
+  {label:"L subclavian aa",       col:"R", y:198, at:[540,291]},
+  {label:"L axillary aa",         col:"R", y:244, at:[602,257]},
+  {label:"Arch aorta",            col:"R", y:330, at:[543,395]},
+  {label:"Descending aorta",      col:"R", y:470, at:[545,580]},
+  {label:"L coronary aa",         col:"R", y:612, at:[478,560]},
+];
+
+/* ======================= Drawings ======================= */
+const VB = {x:-140, y:0, w:1070, h:720};
+const BOX = {w:175, h:32, xL:-130, xR:735};
+const COLORS = {a:"#d64545", v:"#3b6fd8", p:"#7a5cc7", f:"#e6dcd6"};
+
+const DIAGRAMS = {
+  art: {
+    heart:{cx:425, cy:575, rx:95, ry:80},
+    paths:[
+      ["desc","a","M545 420 L545 700"],
+      ["archAorta","a","M410 500 C400 400 420 330 470 330 C520 330 545 360 545 420"],
+      ["brachio","a","M440 338 L380 250"],
+      ["rcc","a","M380 250 L360 150"],
+      ["rint","a","M360 150 L330 40"],
+      ["rext","a","M360 150 L388 45"],
+      ["lcc","a","M476 330 L490 150"],
+      ["lext","a","M490 150 L465 45"],
+      ["lint","a","M490 150 L520 40"],
+      ["rsub","a","M380 250 L285 240"],
+      ["rax","a","M285 240 L200 270"],
+      ["rbrach","a","M200 270 L185 420"],
+      ["rrad","a","M185 420 L160 570"],
+      ["rul","a","M185 420 L212 570"],
+      ["lsub","a","M515 338 L565 245"],
+      ["lax","a","M565 245 L640 270"],
+      ["lbrach","a","M640 270 L655 420"],
+      ["lrad","a","M655 420 L682 570"],
+      ["lul","a","M655 420 L628 570"],
+      ["rcor","a","M402 505 Q360 530 352 595"],
+      ["lcor","a","M420 505 Q470 525 488 585"],
+    ]
+  },
+  vein: {
+    heart:{cx:430, cy:540, rx:95, ry:78},
+    paths:[
+      ["aortaF","f","M450 470 C440 380 470 330 510 335 C550 340 565 370 565 430 L565 700"],
+      ["rbcv","f","M365 300 L330 235"],
+      ["lbcv","f","M365 300 L520 235"],
+      ["rsv","f","M330 235 L190 245"],
+      ["lsv","f","M520 235 L660 245"],
+      ["azygos","v","M405 710 L405 360 Q405 315 367 325"],
+      ["svc","v","M365 480 L365 300"],
+      ["ivc","v","M365 600 L365 710"],
+      ["rij","v","M330 235 L322 50"],
+      ["lij","v","M520 235 L528 50"],
+      ["rej","v","M270 240 L262 70"],
+      ["lej","v","M585 240 L595 70"],
+      ["rpa","p","M465 400 Q420 385 300 400"],
+      ["lpa","p","M465 400 Q520 385 620 400"],
+      ["ptrunk","p","M455 470 L465 400"],
+      ["csinus","v","M360 585 Q430 615 505 580"],
+    ]
+  }
+};
+
+function vesselSVG(which, hl=[], extra=""){
+  const D = DIAGRAMS[which], any = hl.length>0;
+  let s = `<svg viewBox="${VB.x} ${VB.y} ${VB.w} ${VB.h}" xmlns="http://www.w3.org/2000/svg" role="img">`;
+  const h = D.heart;
+  s += `<ellipse cx="${h.cx}" cy="${h.cy}" rx="${h.rx}" ry="${h.ry}" fill="${any?'#f4e6e3':'#f6d9d6'}" stroke="#e3bfba" stroke-width="3"/>`;
+  s += `<text x="${h.cx}" y="${h.cy+8}" text-anchor="middle" font-size="22" fill="#c9a19b" font-weight="600">heart</text>`;
+  const halo = [], body = [];
+  for (const [id,kind,d] of D.paths){
+    const on = hl.includes(id);
+    let col = COLORS[kind], w = kind==="f"?9:12, op = 1;
+    if (any && !on && kind!=="f"){ col = "#d9cfca"; op = .85; }
+    if (on){ w = 16; halo.push(`<path d="${d}" fill="none" stroke="#ffd447" stroke-width="34" stroke-linecap="round" opacity=".75"/>`); }
+    (on?halo:body).push(`<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" opacity="${op}"/>`);
+  }
+  s += body.join("") + halo.join("");
+  s += `<text x="-110" y="705" font-size="22" fill="#a2938c" font-weight="700">Patient's R</text>`;
+  s += `<text x="900" y="705" font-size="22" fill="#a2938c" font-weight="700" text-anchor="end">Patient's L</text>`;
+  return s + extra + `</svg>`;
+}
+function picFor(t){ return t.img ? `<img src="${t.img}" alt="">` : vesselSVG(t.pic, t.show); }
+
+/* ======================= Helpers ======================= */
+const $ = (sel, el=document) => el.querySelector(sel);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* Drag and drop: onDrop(chip, target) returns true if it's a match */
+function makeDraggable(el, onDrop){
+  el.addEventListener("pointerdown", e => {
+    if (el.classList.contains("locked") || e.button!==0) return;
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY;
+    let over = null;
+    el.style.transition = "none";
+    el.classList.add("dragging"); el.classList.remove("wrong");
+    const find = ev => { const u = document.elementFromPoint(ev.clientX, ev.clientY); return u && u.closest(".drop:not(.solved)"); };
+    const move = ev => {
+      el.style.transform = `translate(${ev.clientX-sx}px,${ev.clientY-sy}px)`;
+      const t = find(ev);
+      if (t!==over){ over && over.classList.remove("over"); over = t; over && over.classList.add("over"); }
+    };
+    const up = ev => {
+      el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up);
+      const t = find(ev);
+      over && over.classList.remove("over");
+      el.classList.remove("dragging");
+      if (t && onDrop(el, t)){ el.style.transform = ""; return; }
+      el.style.transition = "transform .4s cubic-bezier(.3,1.5,.5,1)";
+      el.style.transform = "";
+      if (t){
+        el.classList.add("wrong"); el.dataset.missed = "1";
+        t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash");
+        setTimeout(()=>el.classList.remove("wrong"), 700);
+      }
+    };
+    el.addEventListener("pointermove", move); el.addEventListener("pointerup", up);
+  });
+}
+
+/* ======================= Tabs ======================= */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x===b));
+  document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id===b.dataset.tab));
+});
+
+/* ======================= 1. Flashcards ======================= */
+const FC = {deck:[], flipped:false, got:0};
+function fcStart(){ FC.deck = shuffle(TERMS.map((_,i)=>i)); FC.flipped=false; FC.got=0; fcRender(); }
+function fcRender(){
+  const v = $("#flash");
+  if (!FC.deck.length){
+    v.innerHTML = `<div class="done"><h2>Pile cleared! 🎉</h2><p class="fc-hint">You got all ${TERMS.length} cards.</p><button class="btn primary" id="fcAgain">Go again</button></div>`;
+    $("#fcAgain").onclick = fcStart; return;
+  }
+  const t = TERMS[FC.deck[0]];
+  v.innerHTML = `
+    <div class="toolbar"><span class="pill">${FC.deck.length} left in the pile</span><span class="pill">${FC.got} got it</span><span class="spacer"></span><button class="btn" id="fcRestart">Shuffle & restart</button></div>
+    <div class="fc-wrap">
+      <div class="fc-card" id="fcCard" title="Click to flip">${picFor(t)}</div>
+      <div class="fc-side">
+        ${FC.flipped ? `
+          <div class="fc-term">${esc(t.term)}</div>
+          <div class="fc-def">${esc(t.def)}</div>
+          <div class="fc-btns"><button class="btn bad" id="fcMiss">Missed it</button><button class="btn good" id="fcGot">Got it</button></div>
+          <div class="keys">Keyboard: ← missed · → got it</div>`
+        : `
+          <div class="fc-hint">What's the highlighted structure? Say it (and what it does) out loud, then flip.</div>
+          <div class="fc-btns"><button class="btn primary" id="fcFlip">Flip card</button></div>
+          <div class="keys">Keyboard: Space to flip</div>`}
+      </div>
+    </div>`;
+  $("#fcRestart").onclick = fcStart;
+  $("#fcCard").onclick = fcFlip;
+  if (FC.flipped){ $("#fcMiss").onclick = fcMiss; $("#fcGot").onclick = fcGot; }
+  else $("#fcFlip").onclick = fcFlip;
+}
+function fcFlip(){ if (!FC.flipped){ FC.flipped = true; fcRender(); } }
+function fcGot(){ FC.deck.shift(); FC.got++; FC.flipped=false; fcRender(); }
+function fcMiss(){ const c = FC.deck.shift(); FC.deck.splice(Math.min(3, FC.deck.length), 0, c); FC.flipped=false; fcRender(); }
+document.addEventListener("keydown", e => {
+  if (!$("#flash").classList.contains("on") || !FC.deck.length) return;
+  if (e.code==="Space"){ e.preventDefault(); fcFlip(); }
+  else if (FC.flipped && e.key==="ArrowRight") fcGot();
+  else if (FC.flipped && e.key==="ArrowLeft") fcMiss();
+});
+
+/* ======================= 2. Matching ======================= */
+const M = {mode:"def", rounds:[], r:0, misses:0};
+function mStart(){ const s = shuffle(TERMS.map((_,i)=>i)); M.rounds=[]; for (let i=0;i<s.length;i+=6) M.rounds.push(s.slice(i,i+6)); M.r=0; M.misses=0; mRender(); }
+function mRender(){
+  const v = $("#match");
+  const bar = `<div class="toolbar">
+      <div class="seg"><button data-m="def" class="${M.mode==='def'?'on':''}">Term → Definition</button><button data-m="pic" class="${M.mode==='pic'?'on':''}">Term → Picture</button></div>
+      <span class="pill">Round ${Math.min(M.r+1,M.rounds.length)} of ${M.rounds.length}</span>
+      <span class="spacer"></span><button class="btn" id="mRestart">Restart</button></div>`;
+  if (M.r >= M.rounds.length){
+    v.innerHTML = bar + `<div class="done"><h2>All ${TERMS.length} matched! 🎉</h2><p class="fc-hint">${M.misses===0?'Not a single wrong drop.':`${M.misses} wrong drop${M.misses>1?'s':''} along the way.`}</p><button class="btn primary" id="mAgain">Play again</button></div>`;
+    mWire(); $("#mAgain").onclick = mStart; return;
+  }
+  const ids = M.rounds[M.r];
+  v.innerHTML = bar + `<div class="m-grid">
+      <div class="m-terms">${shuffle(ids).map(i=>`<div class="chip" data-i="${i}">${esc(TERMS[i].term)}</div>`).join("")}</div>
+      <div class="m-targets ${M.mode==='pic'?'pics':''}">${shuffle(ids).map(i=>`
+        <div class="m-target drop" data-i="${i}">
+          ${M.mode==='pic' ? picFor(TERMS[i]) : `<div class="txt">${esc(TERMS[i].def)}</div>`}
+          <div class="slot">drop term here</div>
+        </div>`).join("")}</div>
+    </div>`;
+  mWire();
+  v.querySelectorAll(".m-terms .chip").forEach(c => makeDraggable(c, (chip, t) => {
+    if (chip.dataset.i !== t.dataset.i){ M.misses++; return false; }
+    const slot = $(".slot", t); slot.textContent = ""; slot.appendChild(chip);
+    chip.classList.add("locked"); t.classList.add("solved");
+    if (!v.querySelector(".m-terms .chip")) setTimeout(()=>{ M.r++; mRender(); }, 900);
+    return true;
+  }));
+}
+function mWire(){
+  document.querySelectorAll("#match .seg button").forEach(b => b.onclick = () => { M.mode = b.dataset.m; mStart(); });
+  $("#mRestart").onclick = mStart;
+}
+
+/* ======================= 3. Label the Diagram ======================= */
+function lStart(){
+  const v = $("#label");
+  let leaders = "";
+  for (const L of LABELS){
+    const bx = L.col==="L" ? BOX.xL+BOX.w : BOX.xR, by = L.y + BOX.h/2;
+    leaders += `<line x1="${bx}" y1="${by}" x2="${L.at[0]}" y2="${L.at[1]}" stroke="#8a7b75" stroke-width="1.6"/><circle cx="${L.at[0]}" cy="${L.at[1]}" r="5" fill="#2b2220"/>`;
+  }
+  const pct = (n, of) => (n/of*100).toFixed(3) + "%";
+  const boxes = LABELS.map((L,i) => {
+    const x = (L.col==="L"?BOX.xL:BOX.xR) - VB.x;
+    return `<div class="l-box drop" data-i="${i}" style="left:${pct(x,VB.w)};top:${pct(L.y,VB.h)};width:${pct(BOX.w,VB.w)};height:${pct(BOX.h,VB.h)}"></div>`;
+  }).join("");
+  v.innerHTML = `
+    <div class="toolbar"><span class="pill" id="lCount">0 of ${LABELS.length} placed</span><span class="spacer"></span><button class="btn" id="lRestart">Restart</button></div>
+    <div id="lResult"></div>
+    <div class="l-grid">
+      <div class="l-diagram">${vesselSVG("art", [], leaders)}${boxes}</div>
+      <div class="l-bank"><h3>Drag each label to its box</h3>${shuffle(LABELS.map((_,i)=>i)).map(i=>`<div class="chip" data-i="${i}">${esc(LABELS[i].label)}</div>`).join("")}</div>
+    </div>`;
+  $("#lRestart").onclick = lStart;
+  let placed = 0;
+  v.querySelectorAll(".l-bank .chip").forEach(c => makeDraggable(c, (chip, t) => {
+    if (LABELS[chip.dataset.i].label !== LABELS[t.dataset.i].label) return false;
+    t.appendChild(chip); chip.classList.add("locked"); t.classList.add("solved");
+    placed++; $("#lCount").textContent = `${placed} of ${LABELS.length} placed`;
+    if (placed === LABELS.length){
+      const right = [...v.querySelectorAll(".l-box .chip")].filter(x => !x.dataset.missed).length;
+      $("#lResult").innerHTML = `<p class="result">Done! You got ${right} of ${LABELS.length} right on the first try.</p>`;
+    }
+    return true;
+  }));
+}
+
+fcStart(); mStart(); lStart();
+</script>
+</body>
+</html>

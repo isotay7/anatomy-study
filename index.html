@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anatomy Lab</title>
+<meta name="description" content="Visual study games for anatomy lab practicals.">
+<meta name="theme-color" content="#f8f3ee">
+<meta name="color-scheme" content="light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Anatomy">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<!-- shared SVG definitions used by every diagram -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="-5000" y="-5000" width="10000" height="10000">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <radialGradient id="heartGrad" cx="42%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#f8d3cc"/>
+      <stop offset="1" stop-color="#e7a59c"/>
+    </radialGradient>
+  </defs>
+</svg>
+
+<header class="bar">
+  <button class="back" id="back" hidden aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div class="bar-title" id="barTitle"></div>
+  <div class="bar-right" id="barRight"></div>
+</header>
+<main id="view" class="view"></main>
+
+<script src="js/diagram.js"></script>
+<script src="js/store.js"></script>
+<script src="js/dnd.js"></script>
+<script src="js/games.js"></script>
+<script src="decks/index.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
